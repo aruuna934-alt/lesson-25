@@ -22,13 +22,9 @@ let food = { x: 5, y: 5 };
 let bonusFood = { x: -1, y: -1, active: false, timer: 0 };
 let obstacles = [];
 
-// 1-ЭФФЕКТ: Тамак жегенде чачыраган бөлүкчөлөр массиви
 let particles = [];
-
-// 4-ЭФФЕКТ: Куйруктун артындагы сыйкырдуу издер үчүн массив
 let trailParticles = [];
 
-// 4-ЭФФЕКТ: Комбо системасы үчүн өзгөрмөлөр
 let comboCount = 0;
 let comboTimer = 0;
 let comboText = { text: "", opacity: 0, x: 0, y: 0 };
@@ -44,6 +40,10 @@ let snakeColor = "#FF5722";
 let gameInterval;
 let clockInterval;
 let gameOver = false;
+
+// ТЕЛЕФОНДО СЕРПҮҮНҮ (SWIPE) АНЫКТОО ҮЧҮН ӨЗГӨРМӨЛӨР
+let touchStartX = 0;
+let touchStartY = 0;
 
 const colorMap = {
     "#FF5722": { light: "#ff8a50", dark: "#e64a19" },
@@ -120,11 +120,8 @@ function initGame() {
 function update() {
     if (gameOver) return;
     
-    // Кыймылдаганда куйруктан из калтыруу
     let tail = snake[snake.length - 1];
-    if (tail) {
-        createTrail(tail.x, tail.y);
-    }
+    if (tail) createTrail(tail.x, tail.y);
 
     moveSnake();
     
@@ -132,7 +129,6 @@ function update() {
         gameOver = true;
         clearInterval(gameInterval);
         clearInterval(clockInterval);
-        if(typeof overSound === 'function') overSound();
         restartBtn.classList.remove("hidden");
         drawGameOver();
         return;
@@ -142,7 +138,7 @@ function update() {
     updateParticles();
     updateTrail();
     
-    clearCanvas(); // Таза торчо фон
+    clearCanvas();
     drawObstacles();
     drawFood();
     drawBonusFood();
@@ -152,7 +148,6 @@ function update() {
     drawComboText(); 
 }
 
-// Таза жана заманбап минималисттик торчо фон
 function clearCanvas() {
     ctx.fillStyle = "#edf2f7";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -167,7 +162,6 @@ function clearCanvas() {
     }
 }
 
-// Куйруктун артындагы сыйкырдуу издер
 function createTrail(x, y) {
     let px = x * gridSize + gridSize / 2;
     let py = y * gridSize + gridSize / 2;
@@ -239,7 +233,6 @@ function drawSnake() {
         ctx.arc(cx, cy, gridSize / 2 - 1, 0, Math.PI * 2);
         ctx.fill();
 
-        // Көздөрдүн багыты
         if (index === 0) {
             ctx.fillStyle = "#FFF";
             let eyeX1, eyeY1, eyeX2, eyeY2;
@@ -268,7 +261,6 @@ function drawSnake() {
     });
 }
 
-// Алма жегенде жарылуу эффекти
 function createBurst(x, y, color) {
     let px = x * gridSize + gridSize / 2;
     let py = y * gridSize + gridSize / 2;
@@ -307,7 +299,6 @@ function drawParticles() {
     });
 }
 
-// Комбо жазуусу
 function drawComboText() {
     if (comboText.opacity > 0) {
         ctx.save();
@@ -381,7 +372,6 @@ function checkFoodEat() {
         score += addedScore;
         createBurst(food.x, food.y, "#ff7675");
 
-        if(typeof eatSound === 'function') eatSound();
         snake.push({...snake[snake.length - 1]});
         generateFood();
         
@@ -396,7 +386,6 @@ function checkFoodEat() {
     if (bonusFood.active && snake[0].x === bonusFood.x && snake[0].y === bonusFood.y) {
         score += 30;
         createBurst(bonusFood.x, bonusFood.y, "#fcc419");
-        if(typeof bonusSound === 'function') bonusSound();
         bonusFood.active = false;
         snake.push({...snake[snake.length - 1]});
         saveStats();
@@ -442,6 +431,7 @@ function drawGameOver() {
     ctx.fillText("ИГРА ОКОНЧЕНА!", canvas.width / 2, canvas.height / 2);
 }
 
+// КОМПЬЮТЕР ҮЧҮН (КЛАВИАТУРА)
 window.addEventListener("keydown", e => {
     switch (e.key) {
         case "ArrowUp": case "w": case "W": if (dy !== 1) { dx = 0; dy = -1; } break;
@@ -450,3 +440,36 @@ window.addEventListener("keydown", e => {
         case "ArrowRight": case "d": case "D": if (dx !== -1) { dx = 1; dy = 0; } break;
     }
 });
+
+// ТЕЛЕФОН ҮЧҮН (СЕНСОРДУК СЕРПӨӨ/SWIPE ЛОГИКАСЫ)
+window.addEventListener("touchstart", e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+window.addEventListener("touchend", e => {
+    if (gameOver) return;
+
+    let touchEndX = e.changedTouches[0].clientX;
+    let touchEndY = e.changedTouches[0].clientY;
+
+    let diffX = touchEndX - touchStartX;
+    let diffY = touchEndY - touchStartY;
+
+    // Кайсы тарапка көбүрөөк серпилгенин аныктоо (горизонтал же вертикал)
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+        // Горизонталдык кыймыл
+        if (diffX > 30 && dx !== -1) { // Оңго
+            dx = 1; dy = 0;
+        } else if (diffX < -30 && dx !== 1) { // Солго
+            dx = -1; dy = 0;
+        }
+    } else {
+        // Вертикалдык кыймыл
+        if (diffY > 30 && dy !== -1) { // Ылдый
+            dx = 0; dy = 1;
+        } else if (diffY < -30 && dy !== 1) { // Өйдө
+            dx = 0; dy = -1;
+        }
+    }
+}, { passive: true });
