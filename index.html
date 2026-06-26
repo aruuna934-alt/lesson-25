@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Мультик Змейка</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="game-container">
+        <div id="mainMenu" class="menu-screen">
+            <h1 class="game-title">Mega Snake 3D! 🐍</h1>
+            
+            <div class="stats-container">
+                <div class="stat-item">🏆 Рекорд: <span id="menuHighScore">0</span></div>
+                <div class="stat-item">⏱ Время игры: <span id="menuMaxTime">0</span> сек</div>
+            </div>
+
+            <div class="skin-section">
+                <h3>Выбери 3D стиль змейки:</h3>
+                <div class="skin-selector">
+                    <button class="skin-btn active" data-color="#FF5722" style="background: radial-gradient(circle at 30% 30%, #ff8a50, #FF5722);"></button>
+                    <button class="skin-btn" data-color="#4CAF50" style="background: radial-gradient(circle at 30% 30%, #81c784, #4CAF50);"></button>
+                    <button class="skin-btn" data-color="#FFEB3B" style="background: radial-gradient(circle at 30% 30%, #fff176, #FFEB3B);"></button>
+                    <button class="skin-btn" data-color="#00BCD4" style="background: radial-gradient(circle at 30% 30%, #4dd0e1, #00BCD4);"></button>
+                </div>
+            </div>
+
+            <button id="startBtn" class="play-button">СТАРТ 🚀</button>
+        </div>
+
+        <div id="gameScreen" class="game-screen hidden">
+            <div class="game-header">
+                <button id="homeBtn" class="home-button">◀ Меню</button>
+                <div class="live-stats">
+                    <span>Счёт: <b id="score">0</b></span>
+                    <span>Время: <b id="timer">0</b>с</span>
+                </div>
+            </div>
+            
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            
+            <button id="restartBtn" class="hidden">Играть снова 🔄</button>
+        </div>
+    </div>
+
+    <script>
+        const playSound = (freq, type, duration) => {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = type; osc.frequency.value = freq;
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
+            osc.stop(ctx.currentTime + duration);
+        };
+        const eatSound = () => playSound(523.25, 'sine', 0.15);
+        const bonusSound = () => { playSound(587.33, 'triangle', 0.1); setTimeout(() => playSound(880, 'triangle', 0.15), 60); };
+        const overSound = () => playSound(220, 'sawtooth', 0.3);
+    </script>
+    <script src="index.js"></script>
+</body>
+</html>
