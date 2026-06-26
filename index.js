@@ -112,13 +112,13 @@ function initGame() {
         }
     }, 1000);
 
-    gameInterval = setInterval(update, 150);
+    // ӨЗГӨРТҮЛГӨН ЖЕР: 150дөн 220го чоңойтулду (Ылдамдык жайыраак болот)
+    gameInterval = setInterval(update, 220);
 }
 
 function update() {
     if (gameOver) return;
     
-    // Куйруктун артынан из калтыруу
     let tail = snake[snake.length - 1];
     if (tail) createTrail(tail.x, tail.y);
 
@@ -147,7 +147,6 @@ function update() {
     drawComboText(); 
 }
 
-// Таза жана заманбап торчо фон
 function clearCanvas() {
     ctx.fillStyle = "#edf2f7";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -162,7 +161,6 @@ function clearCanvas() {
     }
 }
 
-// Сыйкырдуу куйрук издерин жаратуу
 function createTrail(x, y) {
     let px = x * gridSize + gridSize / 2;
     let py = y * gridSize + gridSize / 2;
@@ -234,7 +232,6 @@ function drawSnake() {
         ctx.arc(cx, cy, gridSize / 2 - 1, 0, Math.PI * 2);
         ctx.fill();
 
-        // КӨЗДӨРДҮН БАГЫТЫН КЫЙМЫЛГА КАРАП БУРУУ
         if (index === 0) {
             ctx.fillStyle = "#FFF";
             let eyeX1, eyeY1, eyeX2, eyeY2;
@@ -263,7 +260,6 @@ function drawSnake() {
     });
 }
 
-// АЛМА ЖЕГЕНДЕ ЧАЧЫРОО ЭФФЕКТИ
 function createBurst(x, y, color) {
     let px = x * gridSize + gridSize / 2;
     let py = y * gridSize + gridSize / 2;
@@ -302,7 +298,6 @@ function drawParticles() {
     });
 }
 
-// КОМБО ЖАЗУУСУ
 function drawComboText() {
     if (comboText.opacity > 0) {
         ctx.save();
@@ -435,7 +430,7 @@ function drawGameOver() {
     ctx.fillText("ИГРА ОКОНЧЕНА!", canvas.width / 2, canvas.height / 2);
 }
 
-// КОМПЬЮТЕР ҮЧҮН (КЛАВИАТУРА)
+// КЛАВИАТУРА
 window.addEventListener("keydown", e => {
     switch (e.key) {
         case "ArrowUp": case "w": case "W": if (dy !== 1) { dx = 0; dy = -1; } break;
@@ -445,7 +440,7 @@ window.addEventListener("keydown", e => {
     }
 });
 
-// ТЕЛЕФОН ҮЧҮН ЭКРАНДЫ БАСУУ (TAP) АРКЫЛУУ БАШКАРУУ
+// ТЕЛЕФОН ҮЧҮН ЭКРАНДЫ БАСУУ (TAP)
 canvas.addEventListener("touchstart", e => {
     if (gameOver) return;
 
@@ -461,15 +456,15 @@ canvas.addEventListener("touchstart", e => {
 
     if (Math.abs(diffX) > Math.abs(diffY)) {
         if (diffX > 0 && dx !== -1) {
-            dx = 1; dy = 0; // Оң жакты басты
+            dx = 1; dy = 0;
         } else if (diffX < 0 && dx !== 1) {
-            dx = -1; dy = 0; // Сол жакты басты
+            dx = -1; dy = 0;
         }
     } else {
         if (diffY > 0 && dy !== -1) {
-            dx = 0; dy = 1; // Төмөн жакты басты
-        } else if (diffY < -30 && dy !== 1) {
-            dx = 0; dy = -1; // Жогору жакты басты
+            dx = 0; dy = 1;
+        } else if (diffY < 0 && dy !== 1) { // Өйдө басканды сезгич кылуу
+            dx = 0; dy = -1;
         }
     }
 }, { passive: true });
